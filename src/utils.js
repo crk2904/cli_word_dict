@@ -1,3 +1,4 @@
+import inquirer from 'inquirer'
 const config = require('../configuration/config.json')
 const constants = require('./constants.json')
 const apikey = config.api_key
@@ -29,6 +30,7 @@ function sendRequest (url) {
     url: url
   })
 }
+
 function handleResponse (response, functionName) {
   let finalResponse
   if (functionName === 'getWordDefination') {
@@ -137,4 +139,96 @@ export async function wotd () {
     .then(response => handleResponse(response.data, functionName))
     .then(response => printOutput(mainMsg, response, functionName))
     .catch(err => console.log(err.response.data.error))
+}
+
+export async function play () {
+  const functionName = 'getRandomWord'
+  const url = getURL(functionName)
+  await sendRequest(url)
+    .then(response => playGameFunction(response.data.word))
+    .catch(err => console.log(err.response.data.error))
+}
+
+class HintDataStore {
+  constructor () {
+    this.defn = []
+    this.syn = []
+    this.ant = []
+  }
+
+  initialiseDS () {
+    this.defn = []
+    this.syn = []
+    this.ant = []
+  }
+}
+
+var hintDS = new HintDataStore()
+async function playGameFunction (word) {
+  hintDS.initialiseDS()
+  let functionName = 'getWordDefination'
+  let url = getURL(functionName, word)
+  await sendRequest(url)
+    .then(async (response) => {
+      hintDS.defn = await handleResponse(response.data, functionName)
+    })
+  functionName = 'getExamples'
+  url = getURL(functionName, word)
+  await sendRequest(url)
+    .then(async (response) => {
+      hintDS.ex = await handleResponse(response.data, functionName)
+    })
+  functionName = 'getRelatedWords'
+  url = getURL(functionName, word)
+  await sendRequest(url)
+    .then(async (response) => {
+      hintDS.syn = await handleResponse(response.data, functionName)
+    })
+  await sendRequest(url)
+    .then(async (response) => {
+      const res = await handleResponse(response.data, 'getAntonyms')
+      if (res) {
+        hintDS.ant = res
+      } else {
+        hintDS.ant = []
+      }
+    })
+  inquirer
+    .prompt([
+      {
+        name: 'ans',
+        message: displayQuestion(hintDS)
+      }
+    ])
+    .then(answers => {
+      if (answers.ans === word || hintDS.syn.includes(answers.ans)) {
+        inquirer.prompt([
+          {
+            name: 'option',
+            message: 'Whoaaa Genius!! Right Answer!! Whant to play again (Y/N)? '
+          }
+        ]).then(answers => {
+          if (answers.option.toLowerCase() === 'y') {
+            play()
+          } else {
+            console.log('Thanks for playing with us!!!!')
+          }
+        })
+      }
+    })
+}
+
+function displayQuestion (hintDS) {
+  const randomIndexDefn = Math.floor((Math.random() * (hintDS.defn.length - 1 + 1)) + 1)
+  const randomIndexEx = Math.floor((Math.random() * (hintDS.ex.length - 1 + 1)) + 1)
+  const randomIndexSyn = Math.floor((Math.random() * (hintDS.syn.length - 1 + 1)) + 1)
+
+  console.log('##### Guess the following word')
+  console.log('** Defination of the word:' + hintDS.defn[randomIndexDefn])
+  console.log('** Example: ' + hintDS.ex[randomIndexEx])
+  console.log('** Synonym: ' + hintDS.syn[randomIndexSyn])
+  if (hintDS.ant.length) {
+    const randomIndexAnt = Math.floor((Math.random() * (hintDS.ant.length - 1 + 1)) + 1)
+    console.log('** Antonym: ' + hintDS.ant[randomIndexAnt])
+  }
 }

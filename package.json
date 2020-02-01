@@ -25,6 +25,7 @@
   "homepage": "https://github.com/crk2904/cli_word_dict#readme",
   "dependencies": {
     "axios": "^0.19.2",
-    "esm": "^3.2.25"
+    "esm": "^3.2.25",
+    "inquirer": "^7.0.4"
   }
 }

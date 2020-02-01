@@ -1,4 +1,4 @@
-import { defn, syn, ant, ex, wotd, fullWord } from './utils'
+import { defn, syn, ant, ex, wotd, fullWord, play } from './utils'
 
 export function cli (argsArray) {
   const cmd = argsArray[2] || 'wotd'
@@ -19,6 +19,9 @@ export function cli (argsArray) {
       break
     case 'wotd':
       wotd()
+      break
+    case 'play':
+      play()
       break
     default:
       fullWord(cmd)
