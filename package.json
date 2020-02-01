@@ -1,0 +1,30 @@
+{
+  "name": "cli_word_dict",
+  "version": "1.0.0",
+  "description": "The command line interface for word dictionary",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "dict": "index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crk2904/cli_word_dict.git"
+  },
+  "keywords": [
+    "cli",
+    "word_dict"
+  ],
+  "author": "Chaitali Kulkarni",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/crk2904/cli_word_dict/issues"
+  },
+  "homepage": "https://github.com/crk2904/cli_word_dict#readme",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "esm": "^3.2.25"
+  }
+}

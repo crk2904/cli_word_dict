@@ -1,0 +1,8 @@
+{
+    "uri": {
+        "getWordDefination": "{apihost}/word/{word}/definitions?api_key={apikey}",
+        "getRandomWord": "{apihost}/words/randomWord?api_key={apikey}",
+        "getExamples": "{apihost}/word/{word}/examples?api_key={apikey}",
+        "getRelatedWords": "{apihost}/word/{word}/relatedWords?api_key={api_key}"
+    }
+}
