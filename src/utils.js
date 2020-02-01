@@ -165,7 +165,6 @@ class HintDataStore {
 }
 
 async function playGameFunction (word) {
-  console.log('###Word', word)
   var hintDS = new HintDataStore()
   let functionName = 'getWordDefination'
   let url = getURL(functionName, word)
@@ -194,17 +193,16 @@ async function playGameFunction (word) {
         hintDS.ant = []
       }
     })
-  console.log(hintDS.syn)
-  console.log(hintDS.ant)
-  await playGame(hintDS, word, displayQuestion)
+  console.log('=====GUESS THE WORD========')
+  await playGame(hintDS, word)
 }
 
-async function playGame (hintDS, word, functionToDisplayMessage) {
+async function playGame (hintDS, word) {
   inquirer
     .prompt([
       {
         name: 'ans',
-        message: functionToDisplayMessage(hintDS)
+        message: showHint(hintDS, word)
       }
     ])
     .then(answers => {
@@ -226,36 +224,20 @@ async function playGame (hintDS, word, functionToDisplayMessage) {
       }
     })
 }
-function displayQuestion (hintDS) {
-  const randomIndexDefn = Math.floor((Math.random() * (hintDS.defn.length - 1 + 1)) + 1)
-  const randomIndexEx = Math.floor((Math.random() * (hintDS.ex.length - 1 + 1)) + 1)
-  const randomIndexSyn = Math.floor((Math.random() * (hintDS.syn.length - 1 + 1)) + 1)
-
-  console.log('##### Guess the following word')
-  const defn = hintDS.defn[randomIndexDefn] || 'Not Available'
-  console.log('** Defination of the word:' + defn)
-  const ex = hintDS.ex[randomIndexEx] || 'Not Available'
-  console.log('** Example: ' + ex)
-  const syn = hintDS.syn[randomIndexSyn] || 'Not Available'
-  console.log('** Synonym: ' + syn)
-  if (hintDS.ant.length > 1) {
-    const randomIndexAnt = Math.floor((Math.random() * (hintDS.ant.length - 1 + 1)) + 1)
-    console.log(randomIndexAnt)
-    const ant = hintDS.ant[randomIndexAnt] || 'Not Available'
-    console.log('** Antonym: ' + ant)
-  }
-}
 function displayPlayAgainMenu () {
   console.log('Oops.. Wrong Guess')
   console.log('1. Guess Again')
   console.log('2. Hint')
   console.log('3. Quit')
 }
-function showHint (hintDS) {
+function showHint (hintDS, word) {
   hintCount = hintCount + 1
-  const keys = ['defn', 'syn', 'ex']
-  let hintKey = keys[Math.floor((Math.random() * (2)) + 1)]
-  const randomIndex = Math.floor((Math.random() * (hintDS[hintKey].length - 1 + 1)) + 1)
+  const keys = ['defn', 'syn', 'ex', 'jumbledWord']
+  let hintKey = keys[Math.floor((Math.random() * (3)) + 1)]
+  let randomIndex
+  if (hintKey !== 'jumbledWord') {
+    randomIndex = Math.floor((Math.random() * (hintDS[hintKey].length - 1 + 1)) + 1)
+  }
   switch (hintKey) {
     case 'defn':
       console.log('Hint : Defination of word is: ', hintDS.def[randomIndex])
@@ -269,6 +251,8 @@ function showHint (hintDS) {
     case 'ant':
       console.log('Hint : Antonym of word is: ', hintDS.ant[randomIndex])
       break
+    case 'jumbledWord':
+      console.log('Hint : Jumbled word is', jumbleTheWord(word))
   }
   hintKey = ''
 }
@@ -326,4 +310,16 @@ function wrongAnswer (hintDS, word) {
           break
       }
     })
+}
+
+function jumbleTheWord (word) {
+  word = word.split('')
+  for (var i = word.length - 1; i >= 0; i--) {
+    var rand = Math.floor(Math.random() * i)
+    var temp = word[i]
+    word[i] = word[rand]
+    word[rand] = temp
+  }
+  word = word.join('')
+  return word
 }
