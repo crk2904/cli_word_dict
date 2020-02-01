@@ -194,15 +194,15 @@ async function playGameFunction (word) {
       }
     })
   console.log('=====GUESS THE WORD========')
-  await playGame(hintDS, word)
+  await playGame(hintDS, word, displayQuestion)
 }
 
-async function playGame (hintDS, word) {
+async function playGame (hintDS, word, functionName) {
   inquirer
     .prompt([
       {
         name: 'ans',
-        message: showHint(hintDS, word)
+        message: functionName(hintDS, word)
       }
     ])
     .then(answers => {
@@ -223,6 +223,25 @@ async function playGame (hintDS, word) {
         wrongAnswer(hintDS, word)
       }
     })
+}
+function displayQuestion (hintDS, word) {
+  const randomIndexDefn = Math.floor((Math.random() * (hintDS.defn.length - 1 + 1)) + 1)
+  const randomIndexEx = Math.floor((Math.random() * (hintDS.ex.length - 1 + 1)) + 1)
+  const randomIndexSyn = Math.floor((Math.random() * (hintDS.syn.length - 1 + 1)) + 1)
+  const keys = ['defn', 'syn', 'ex'] // as antonyms are not always present hence avoiding it as
+  let hintKey = keys[Math.floor((Math.random() * (2)) + 1)]
+  switch (hintKey) {
+    case 'defn':
+      console.log('# Defination of word is: ', hintDS.def[randomIndexDefn])
+      break
+    case 'ex':
+      console.log('# Example of word is: ', hintDS.ex[randomIndexEx])
+      break
+    case 'syn':
+      console.log('# Synonym of word is: ', hintDS.syn[randomIndexSyn])
+      break
+  }
+  hintKey = ''
 }
 function displayPlayAgainMenu () {
   console.log('Oops.. Wrong Guess')
