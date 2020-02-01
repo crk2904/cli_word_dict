@@ -4,6 +4,7 @@ const constants = require('./constants.json')
 const apikey = config.api_key
 const apihost = config.apihost
 const axios = require('axios')
+let hintCount = 0
 
 function getURL (cmd, word) {
   var data = {}
@@ -156,16 +157,16 @@ class HintDataStore {
     this.ant = []
   }
 
-  initialiseDS () {
+  clearHints () {
     this.defn = []
     this.syn = []
     this.ant = []
   }
 }
 
-var hintDS = new HintDataStore()
 async function playGameFunction (word) {
-  hintDS.initialiseDS()
+  console.log('###Word', word)
+  var hintDS = new HintDataStore()
   let functionName = 'getWordDefination'
   let url = getURL(functionName, word)
   await sendRequest(url)
@@ -193,11 +194,17 @@ async function playGameFunction (word) {
         hintDS.ant = []
       }
     })
+  console.log(hintDS.syn)
+  console.log(hintDS.ant)
+  await playGame(hintDS, word, displayQuestion)
+}
+
+async function playGame (hintDS, word, functionToDisplayMessage) {
   inquirer
     .prompt([
       {
         name: 'ans',
-        message: displayQuestion(hintDS)
+        message: functionToDisplayMessage(hintDS)
       }
     ])
     .then(answers => {
@@ -205,7 +212,7 @@ async function playGameFunction (word) {
         inquirer.prompt([
           {
             name: 'option',
-            message: 'Whoaaa Genius!! Right Answer!! Whant to play again (Y/N)? '
+            message: 'Whoaaa Genius!! Right Answer!! Want to play again (Y/N)? '
           }
         ]).then(answers => {
           if (answers.option.toLowerCase() === 'y') {
@@ -214,21 +221,109 @@ async function playGameFunction (word) {
             console.log('Thanks for playing with us!!!!')
           }
         })
+      } else {
+        wrongAnswer(hintDS, word)
       }
     })
 }
-
 function displayQuestion (hintDS) {
   const randomIndexDefn = Math.floor((Math.random() * (hintDS.defn.length - 1 + 1)) + 1)
   const randomIndexEx = Math.floor((Math.random() * (hintDS.ex.length - 1 + 1)) + 1)
   const randomIndexSyn = Math.floor((Math.random() * (hintDS.syn.length - 1 + 1)) + 1)
 
   console.log('##### Guess the following word')
-  console.log('** Defination of the word:' + hintDS.defn[randomIndexDefn])
-  console.log('** Example: ' + hintDS.ex[randomIndexEx])
-  console.log('** Synonym: ' + hintDS.syn[randomIndexSyn])
-  if (hintDS.ant.length) {
+  const defn = hintDS.defn[randomIndexDefn] || 'Not Available'
+  console.log('** Defination of the word:' + defn)
+  const ex = hintDS.ex[randomIndexEx] || 'Not Available'
+  console.log('** Example: ' + ex)
+  const syn = hintDS.syn[randomIndexSyn] || 'Not Available'
+  console.log('** Synonym: ' + syn)
+  if (hintDS.ant.length > 1) {
     const randomIndexAnt = Math.floor((Math.random() * (hintDS.ant.length - 1 + 1)) + 1)
-    console.log('** Antonym: ' + hintDS.ant[randomIndexAnt])
+    console.log(randomIndexAnt)
+    const ant = hintDS.ant[randomIndexAnt] || 'Not Available'
+    console.log('** Antonym: ' + ant)
   }
+}
+function displayPlayAgainMenu () {
+  console.log('Oops.. Wrong Guess')
+  console.log('1. Guess Again')
+  console.log('2. Hint')
+  console.log('3. Quit')
+}
+function showHint (hintDS) {
+  hintCount = hintCount + 1
+  const keys = ['defn', 'syn', 'ex']
+  let hintKey = keys[Math.floor((Math.random() * (2)) + 1)]
+  const randomIndex = Math.floor((Math.random() * (hintDS[hintKey].length - 1 + 1)) + 1)
+  switch (hintKey) {
+    case 'defn':
+      console.log('Hint : Defination of word is: ', hintDS.def[randomIndex])
+      break
+    case 'ex':
+      console.log('Hint : Example of word is: ', hintDS.ex[randomIndex])
+      break
+    case 'syn':
+      console.log('Hint : Synonym of word is: ', hintDS.syn[randomIndex])
+      break
+    case 'ant':
+      console.log('Hint : Antonym of word is: ', hintDS.ant[randomIndex])
+      break
+  }
+  hintKey = ''
+}
+function wrongAnswer (hintDS, word) {
+  inquirer
+    .prompt([
+      {
+        name: 'option',
+        message: displayPlayAgainMenu(hintDS)
+      }
+    ])
+    .then(answers => {
+      switch (answers.option) {
+        case '1':
+          inquirer
+            .prompt([
+              {
+                name: 'ans',
+                message: 'Guess again: '
+              }
+            ])
+            .then(answers => {
+              if (answers.ans === word || hintDS.syn.includes(answers.ans)) {
+                inquirer.prompt([
+                  {
+                    name: 'option',
+                    message: 'Whoaaa Genius!! Right Answer!! Want to play again (Y/N)? '
+                  }
+                ]).then(answers => {
+                  if (answers.option.toLowerCase() === 'y') {
+                    play()
+                  } else {
+                    console.log('Thanks for playing with us!!!!')
+                  }
+                })
+              } else {
+                wrongAnswer(hintDS, word)
+              }
+            })
+          break
+        case '2':
+          if (hintCount > 2) {
+            hintDS.clearHints()
+            // more than 3 hints option is causing memory leak hence restricting the hints
+            console.log('Maximum number of Hints achieved!!! Correct Answer : ', word)
+            fullWord(word)
+            break
+          }
+          playGame(hintDS, word, showHint)
+          break
+        case '3':
+          hintDS.clearHints()
+          console.log('Correct Answer : ', word)
+          fullWord(word)
+          break
+      }
+    })
 }
