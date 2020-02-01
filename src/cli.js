@@ -1,4 +1,4 @@
-import { defn, syn, ant, ex, wotd } from './utils'
+import { defn, syn, ant, ex, wotd, fullWord } from './utils'
 
 export function cli (argsArray) {
   const cmd = argsArray[2] || 'wotd'
@@ -21,6 +21,7 @@ export function cli (argsArray) {
       wotd()
       break
     default:
+      fullWord(cmd)
       break
   }
 }

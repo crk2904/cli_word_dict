@@ -83,7 +83,7 @@ export async function defn (word) {
   await sendRequest(url)
     .then(response => handleResponse(response.data, functionName))
     .then(response => printOutput(mainMsg, response, functionName))
-    .catch(err => console.log(err))
+    .catch(err => console.log(err.response.data.error))
 }
 
 export async function syn (word) {
@@ -93,7 +93,7 @@ export async function syn (word) {
   await sendRequest(url)
     .then(response => handleResponse(response.data, functionName))
     .then(response => printOutput(mainMsg, response, functionName))
-    .catch(err => console.log(err))
+    .catch(err => console.log(err.response.data.error))
 }
 
 export async function ant (word) {
@@ -110,7 +110,7 @@ export async function ant (word) {
         printOutput(mainMsg, response, functionName)
       }
     })
-    .catch(err => console.log(err))
+    .catch(err => console.log(err.response.data.error))
 }
 
 export async function ex (word) {
@@ -120,14 +120,14 @@ export async function ex (word) {
   await sendRequest(url)
     .then(response => handleResponse(response.data, functionName))
     .then(response => printOutput(mainMsg, response, functionName))
-    .catch(err => console.log(err))
+    .catch(err => console.log(err.response.data.error))
 }
 
 export async function fullWord (word) {
-  await defn(word)
-  await ex(word)
-  await syn(word)
-  await ant(word)
+  defn(word)
+    .then(ex(word))
+    .then(syn(word))
+    .then(ant(word))
 }
 export async function wotd () {
   const functionName = 'getRandomWord'
@@ -136,5 +136,5 @@ export async function wotd () {
   await sendRequest(url)
     .then(response => handleResponse(response.data, functionName))
     .then(response => printOutput(mainMsg, response, functionName))
-    .catch(err => console.log(err))
+    .catch(err => console.log(err.response.data.error))
 }
